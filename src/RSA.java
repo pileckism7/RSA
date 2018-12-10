@@ -1,3 +1,7 @@
+import java.util.Arrays;
+import java.lang.Math;
+import java.math.BigInteger;
+import java.util.Random;
 /**
  * 
  * @author Kieran Walsh, Martin Price, Mantas Pileckis
@@ -5,10 +9,10 @@
  */
 public class RSA {
 
-	public RSA(){
+	public RSA()
+	{
 	}
-
-	/**public static void main (String args[])
+	public static void main (String args[])
 	{ 	
 		Person Alice = new Person();
 		Person Bob = new Person();
@@ -33,14 +37,29 @@ public class RSA {
 		show (cipher);
 
 		System.out.println ("Alice decodes and reads: " + Alice.decrypt (cipher));
-	}**/
-	public static void main (String args[]) {
-		// Test for inverse, Works good. // 13inverse mod 60 == 37.
-		System.out.println(inverse(13,60));
-		
-		// Test for Mod power, Works good.  // 17^13 mod 77 == 73.
-		System.out.println(modPower(17,13,77));
 	}
+	
+	/**@author Mantas Pileckis
+	 * Raise a number, b, to a power, p, modulo m
+	 * @param b Number
+	 * @param p Power 
+	 * @param m Modulus
+	 * @return Result of (number raised to power) mod
+	 *
+	 */
+	public static long	modPower(long b, long p, long m) {
+		long result = 1;
+		b = b % m;
+		while (p > 0) {
+			if((p & 1)==1) {
+				result = (result * b) % m;
+			}
+			p = p >> 1;
+			b = (b * b) % m;  
+		}
+		return result;
+	}
+
 	
 	/**@author Mantas Pileckis
 	 * 	Find the multiplicative inverse of a long e, mod m
@@ -48,7 +67,6 @@ public class RSA {
 	 * @param m Modulus
 	 * @return Result of inverse Number modded by m
 	 */
-
 	public static long inverse(long e, long m) { 
         long m0 = m; 
         long y = 0;
@@ -72,44 +90,93 @@ public class RSA {
   
         return x; 
     } 
-	//Convert a long to 2 chars
-	public static String longTo2Chars(long x){
-		return null;
-	}
-	/**@author Mantas Pileckis
-	 * Raise a number, b, to a power, p, modulo m
-	 * @param b Number
-	 * @param p Power 
-	 * @param m Modulus
-	 * @return Result of (number raised to power) mod
-	 *
+	
+	/**
+	 * Convert a long to 2 chars
+	 * @author Walsh
+	 * @param long x
+	 * @return String of 2 chars
 	 */
-	public static long	modPower(long b, long p, long m) {
-		long result = 1;      
-		b = b % m;  
-		while (p > 0) { 
-			if((p & 1)==1) {
-				result = (result * b) % m;
+	public static String longTo2Chars(long x)
+	{
+		String result = Long.toString(x).substring(0,2);
+		return result;
+	}
+	
+	
+	/**
+	 * Find a random prime number within range n to m.
+	 * 
+	 * @param int m, n (bounds) java.util.Random rand (Random number generator)
+	 * @return long num a random prime number
+	 * @author Walsh
+	 */
+	public static long	randPrime(int m, int n, java.util.Random rand) 
+	{
+		rand = new Random();
+		int num = rand.nextInt(n - m) + m;
+
+		while(!isPrime(num))
+		{
+			num = rand.nextInt(n - m) + m;
+		}
+		return num;
+	}
+	
+	/**
+	 * Used in randPrime to check if a number is prime.
+	 * @param int number
+	 * @return boolean
+	 * @author Walsh
+	 */
+	private static boolean isPrime(int number) {
+		for (int i = 2; i < number; i++) {
+			if (number % i == 0) {
+				return false;
 			}
-			p = p >> 1;  
-			b = (b * b) % m;  
-		} 
-		return result; 
+		}
+		return true;
 	}
-	// Find a random prime number
-	public static long	randPrime(int m, int n, java.util.Random rand) {
-		return null;
+	
+	/**
+	 * Find relatively prime number to n.
+	 * 
+	 * @param n
+	 * @param rand
+	 * @return long m
+	 * @author Walsh
+	 */
+	public static long	relPrime(long n, java.util.Random rand) 
+	{
+		long m = rand.nextInt((int) (n-1));
+		while(BigInteger.valueOf(n).gcd(BigInteger.valueOf(m)).intValue() != 1)
+		{
+			m = rand.nextInt((int) n-1);
+		}
+		return m;
 	}
-	//Find a random number relatively prime to a given long int
-	public static long	relPrime(long n, java.util.Random rand) {
-		return null;
+	
+	/**
+	 * Display an array of longs on stdout
+	 * @param cipher
+	 * @author Walsh
+	 */
+	public static void	show(long[] cipher) 
+	{
+		System.out.println(Arrays.toString(cipher));
 	}
-	//Display an array of longs on stdout
-	public static void	show(long[] cipher) {
-	}
-	//Convert two numeric chars to a long
-	public static long	toLong(java.lang.String msg, int p) {
-		return null;
+	
+	/**
+	 * Convert two numeric chars to a long
+	 * @param msg
+	 * @param p
+	 * @return long
+	 * @author Walsh
+	 */
+	public static long	toLong(java.lang.String msg, int p) 
+	{
+		String temp = msg.substring(p,p+1);
+		return Long.parseLong(temp);
 	}
 
 
