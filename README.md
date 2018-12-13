@@ -18,7 +18,7 @@ Alice decodes and reads: No thanks, I'm busy<br />
 Message is: Bob, when are you free this week?<br /> I would like to discuss business over lunch<br />
 Alice sends:<br />
 73900544587213470, 257116399254012796, 13537599676183118, 167851709478080012, 195816396184782409, 182759718208263392,<br /> 192555021113547709, 239551984580292500, 44610412289241367, 174206375743004969, 82736376521173404, 244448547419893973
-Bob decodes and reads: Bob, when are you free this week?<br /> I would like to discuss business over lunch<br />
+Bob decodes and reads: <br />Bob, when are you free this week? I would like to discuss business over lunch
 <br />
 Message is: I am busy this week, maybe another time ?<br />
 Bob sends:
