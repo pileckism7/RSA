@@ -7,30 +7,47 @@ public class Person {
 	private long exponent;
 	private long modulus;
 	private long base;
+	private long d;
 	
-	//TODO
-	//Generate a public key for this person, consisting of exponent,e, and modulus, m.
-	//Generate a private key, consisting of an exponent, d.
-	//Provide access to the public key only.
+	/**
+	 * Constructor
+	 * @param e exponent
+	 * @param m modulus
+	 * @param b base
+	 */
 	public Person(long e, long m, long b)
 	{
 		exponent = e;
 		modulus = m;
 		base = b;
+		d = RSA.inverse(e, m);
 	}
-	// Decrypt the cipher text
+	
+	/**
+	 * Decrypts the cipher message
+	 * 
+	 * @param cipher : long array representing the cipher message
+	 * @return : decrypted cipher
+	 * @author martinprice
+	 */
 	public String decrypt(long[] cipher) 
 	{
 		String s = "";
 		for(long l : cipher)
 		{
-			long x = (long)Math.pow(l, exponent) % modulus;
-			s += (char)x;
+			long x = RSA.modPower(l, d, modulus);
+			s += RSA.longTo2Chars(x);
 		}
 		return s;
 	}
 	
-	// Encrypt a plain text message to she.
+	/**
+	 * Encrypts the message
+	 * @param msg message to encrypt
+	 * @param p recipient of encrypted message
+	 * @return encrypted message
+	 * @author martinprice
+	 */
 	public  long[]	encryptTo(String msg, Person p) 
 	{
 		long[] encrypted = new long[msg.length()];
@@ -38,19 +55,31 @@ public class Person {
 		for(int i = 0; i < msg.length(); i++)
 		{
 			int asc = (int)msg.charAt(i);
-			encrypted[i] = (long)Math.pow(asc, key) % modulus;
+			encrypted[i] = RSA.modPower(base, p.getE(), p.getM());
 		}
 		return encrypted;
 	}
 	
-	//Access the public encryption exponent
+	/**
+	 * 
+	 * @return public exponent
+	 * @author martinprice
+	 */
 	public long getE() 
 	{ return exponent; }
 	
-	//Access the public modulus
+	/**
+	 * 
+	 * @return public modulus
+	 * @author martinprice
+	 */
 	public long getM()
 	{ return modulus; }
 	
+	/**
+	 * Calculates the person public key
+	 * @return the persons public key
+	 * @author martinprice
+	 */
 	public long getPublicKey()
-	{ return (long)Math.pow(base, exponent) % modulus; }
-}
+	{ return RSA.modPower(base, exponent, modulus); }
