@@ -3,11 +3,14 @@
  * @author Kieran Walsh, Martin Price, Mantas Pileckis
  *
  */
-public class Person {
-	private long exponent;
-	private long modulus;
-	private long base;
-	private long d;
+import java.util.Random;
+public class Person 
+{
+	/** Instance Variables */
+	private long privKey;	//Decrypt with
+	private long mod;
+	private long p;
+	private long q;
 	
 	/**
 	 * Constructor
@@ -15,12 +18,12 @@ public class Person {
 	 * @param m modulus
 	 * @param b base
 	 */
-	public Person(long e, long m, long b)
+	public Person()
 	{
-		exponent = e;
-		modulus = m;
-		base = b;
-		d = RSA.inverse(e, m);
+		long p = RSA.randPrime((int)(Math.sqrt(Math.sqrt(Long.MAX_VALUE))), (int)Math.sqrt(Long.MAX_VALUE), new Random());
+		long q = RSA.randPrime((int)(Math.sqrt(Math.sqrt(Long.MAX_VALUE))), (int)Math.sqrt(Long.MAX_VALUE), new Random());
+		mod = p * q;
+		privKey = RSA.inverse(getPublicKey(), ((p-1)*(q-1)));
 	}
 	
 	/**
@@ -35,7 +38,7 @@ public class Person {
 		String s = "";
 		for(long l : cipher)
 		{
-			long x = RSA.modPower(l, d, modulus);
+			long x = RSA.modPower(l, privKey, mod);
 			s += RSA.longTo2Chars(x);
 		}
 		return s;
@@ -55,18 +58,10 @@ public class Person {
 		for(int i = 0; i < msg.length(); i++)
 		{
 			int asc = (int)msg.charAt(i);
-			encrypted[i] = RSA.modPower(base, p.getE(), p.getM());
+			encrypted[i] = RSA.modPower(asc, key, p.getM());
 		}
 		return encrypted;
 	}
-	
-	/**
-	 * 
-	 * @return public exponent
-	 * @author martinprice
-	 */
-	public long getE() 
-	{ return exponent; }
 	
 	/**
 	 * 
@@ -74,7 +69,7 @@ public class Person {
 	 * @author martinprice
 	 */
 	public long getM()
-	{ return modulus; }
+	{ return mod; }
 	
 	/**
 	 * Calculates the person public key
@@ -82,4 +77,5 @@ public class Person {
 	 * @author martinprice
 	 */
 	public long getPublicKey()
-	{ return RSA.modPower(base, exponent, modulus); }
+	{ return RSA.relPrime(((p-1) * (q-1)), new Random()); }
+}
