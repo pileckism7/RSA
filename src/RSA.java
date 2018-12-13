@@ -129,16 +129,16 @@ public class RSA
 	 * @param modulus The modulus that we are working with
 	 * @return The result % modulus
 	 */
-	public static long overflow(long arrVariable, long rrrVariable2, long modulus)
+	public static long overflow(long arrVariable, long arrVariable2, long modulus)
 	{
 		long newValue = 0;
-		while(rrrVariable2 > 0){
+		while(arrVariable2 > 0){
 			// If rrrVariable2 is odd, add a to return
-			if (rrrVariable2 % 2 == 1) {
+			if (arrVariable2 % 2 == 1) {
 				newValue = (newValue + arrVariable) % modulus;
 			}
 			arrVariable = (arrVariable * 2) % modulus;			
-			rrrVariable2 /= 2;
+			arrVariable2 /= 2;
 		}
 		return newValue;
 	}
@@ -148,7 +148,8 @@ public class RSA
 	 * Method that generates a random prime number within the limits of min and max
 	 * @param minValue the min limit
 	 * @param maxValue the max limit
-	 * @return a random prime between the min and max limit
+	 * @param rand Random value
+	 * @return rand random prime between the min and max limit
 	 * @author Kieran Walsh
 	 */
 	public static long randPrime(long minValue, long maxValue, Random rand)
@@ -164,6 +165,7 @@ public class RSA
 	/**
 	 * Method that generates a random long relatively prime to num
 	 * @param num value which we are checking
+	 * @param rand Random value
 	 * @return Random value which is relatively prime and less than num
 	 * @author Kieran Walsh
 	 */
@@ -220,18 +222,13 @@ public class RSA
 			a = b; 		//b becomes the new a value
 			b = r; 		//r becomes the new b value
 		}
-		if (a == 1){
-			return true;
-		}
-		else{
-			return false;
-		}
+		return (a == 1) ? true : false; //true if gcd is 1, or false if it is not
 	}
 
 	/**
-	 * Use standard out to display the data as a sequence of numbers
+	 * Show method to display the array of longs
 	 * 
-	 * @param long[] data
+	 * @param data The array of longs that we want to show
 	 * @author Kieran Walsh
 	 */
 	public static void show(long[] data)
@@ -250,7 +247,7 @@ public class RSA
 	 * Convert a long to n chars, where n 
 	 * is the block size of the message.
 	 * 
-	 * @param long x
+	 * @param  x The long that we are converting
 	 * @return String chars
 	 * @author Kieran Walsh
 	 */
@@ -282,9 +279,9 @@ public class RSA
 	/**
 	 * Converts a specified number of numeric chars, n, to a long
 	 * 
-	 * @param 	String msg
-	 * @param 	int p
-	 * @param 	int n
+	 * @param 	msg The message that is being converted
+	 * @param 	p Position 
+	 * @param 	n limit of the message
 	 * @return 	long converted
 	 * @author Kieran Walsh
 	 */
@@ -303,13 +300,13 @@ public class RSA
 			
 		}
 		
-		long result = 0;
+		long converted = 0;
 		int size = bits.length();
 		for(int i = 0; i < size; i++) 
 		{
-			result += (1l << (i))*Long.parseLong(bits.substring(size-i-1, size-i));
+			converted += (1l << (i))*Long.parseLong(bits.substring(size-i-1, size-i));
 		}	
-		return result;
+		return converted;
 	}
 
 
