@@ -41,7 +41,7 @@ public class Person
 	 * @param p person to encrpyt to
 	 * @return encrypted message in form of long[]
 	 */
-	public long[] encryptTo(String msg, Person p)
+	public long[] encrypt(String msg, Person p)
 	{
 		long theirKey = p.getE();     
 		long theirMod = p.getM();
