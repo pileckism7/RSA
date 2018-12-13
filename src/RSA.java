@@ -220,7 +220,12 @@ public class RSA
 			a = b; 		//b becomes the new a value
 			b = r; 		//r becomes the new b value
 		}
-		return (a == 1) ? true : false; //true if gcd is 1, or false if it is not
+		if (a == 1){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 
 	/**
@@ -298,13 +303,13 @@ public class RSA
 			
 		}
 		
-		long converted = 0;
+		long result = 0;
 		int size = bits.length();
 		for(int i = 0; i < size; i++) 
 		{
-			converted += (1l << (i))*Long.parseLong(bits.substring(size-i-1, size-i));
+			result += (1l << (i))*Long.parseLong(bits.substring(size-i-1, size-i));
 		}	
-		return converted;
+		return result;
 	}
 
 
