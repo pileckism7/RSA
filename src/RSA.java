@@ -209,20 +209,25 @@ public class RSA
 	 */
 	private static boolean isRelativelyPrime(long x, long n)
 	{
-		long a = x, b = n, r = 2; //r initially set to 2 so it can enter the loop
-		if(x < n) //n is larger; swap the values to perform gcd
+		long a = x, b = n, r = 2; 
+		if(x < n) 
 		{ 
 			a = n;
 			b = x;
 		}
 		
-		while(r != 0) //the reaminder still is not equal to zero
+		while(r != 0) 
 		{ 
-			r = a%b; 	//calculate mod
-			a = b; 		//b becomes the new a value
-			b = r; 		//r becomes the new b value
+			r = a%b; 	
+			a = b; 		
+			b = r; 		
 		}
-		return (a == 1) ? true : false; //true if gcd is 1, or false if it is not
+		if(a == 1){
+			return true;
+		}
+		else{
+			return false;
+		}
 	}
 
 	/**
