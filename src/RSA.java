@@ -1,183 +1,310 @@
-import java.util.Arrays;
-import java.lang.Math;
-import java.math.BigInteger;
 import java.util.Random;
-/**
- * 
- * @author Kieran Walsh, Martin Price, Mantas Pileckis
- *
- */
-public class RSA {
 
-	public RSA()
+/**
+ *Implementation of the RSA public-key encryption algorithm.
+ *
+ *@author Kieran Walsh, Martin Price, Mantas Pileckis
+ *@version December 2018
+ */
+public class RSA
+{  
+	public static void main (String args[]) throws Exception
 	{
-	}
-	
-	public static void main (String args[])
-	{ 	
 		Person Alice = new Person();
 		Person Bob = new Person();
 
-		String msg = new String ("Bob, let's have lunch."); 	// message to be sent to Bob
+		String msg = new String ("Bob, you are unriable person"); 
 		long []  cipher;
-		cipher =  Alice.encryptTo(msg, Bob);			// encrypted, with Bob's public key
+		cipher =  Alice.encryptTo(msg, Bob);			
 
 		System.out.println ("Message is: " + msg);
 		System.out.println ("Alice sends:");
 		show (cipher);
 
-		System.out.println ("Bob decodes and reads: " + Bob.decrypt (cipher));	// decrypted,
-		// with Bob's private key.
+		System.out.println ("Bob decodes and reads: " + Bob.decrypt (cipher));	
 		System.out.println ();
 
-		msg = new String ("No thanks, I'm busy");
+		msg = new String ("Dont contact me again");
 		cipher = Bob.encryptTo (msg, Alice);
 
 		System.out.println ("Message is: " + msg);
 		System.out.println ("Bob sends:");
 		show (cipher);
 
-		System.out.println ("Alice decodes and reads: " + Alice.decrypt (cipher));
-	}
-	
-	/**@author Mantas Pileckis
-	 * Raise a number, b, to a power, p, modulo m
-	 * @param b Number
-	 * @param p Power 
-	 * @param m Modulus
-	 * @return Result of (number raised to power) mod
-	 *
-	 */
-	public static long	modPower(long b, long p, long m) {
-		long result = 1;
-		b = b % m;
-		while (p > 0) {
-			if((p & 1)==1) {
-				result = (result * b) % m;
-			}
-			p = p >> 1;
-			b = (b * b) % m;  
-		}
-		return result;
+		System.out.println ("Alice decodes and reads: " + Alice.decrypt (cipher) + "\n");
+		
+		
 	}
 
-	
-	/**@author Mantas Pileckis
-	 * 	Find the multiplicative inverse of a long e, mod m
-	 * @param e Number
-	 * @param m Modulus
-	 * @return Result of inverse Number modded by m
+	/**
+	 * Method to calculate inverse using Euclidean Algorithm
+	 * @author Mantas Pileckis
+	 * @param x Number which inverse needs to be found of
+	 * @param m	Modulus for that inverse
+	 * @return The number x inverse with modulus m
 	 */
-	public static long inverse(long e, long m) { 
-        long m0 = m; 
-        long y = 0;
-        long x = 1; 
-  
-        if (m == 1) {
-            return 0;
-        }
-        while (e > 1) { 
-            long q = e / m; 
-            long t = m; 
-            m = e % m; 
-            e = t; 
-            t = y; 
-            y = x - q * y; 
-            x = t; 
-        } 
-        if (x < 0) {
-            x += m0;
-        }
-  
-        return x; 
-    } 
+	public static long inverse(long x, long m) 
+	{
+		//Table set up
+		long[] rArr = {x, m};
+		long[] uArr = {1, 0};
+		long[] vArr = {0, 1};
+		long remainder = 0;
+		while(remainder != 1) {
+			remainder = rArr[1] % rArr[0];					
+			long quotient = rArr[1] / rArr[0];			
+            long u = uArr[1] - overflow(uArr[0], quotient, m);	
+    		if (u % m < 0 ) {
+    			u = u + m;
+    		} 
+            long v = vArr[1] - overflow(vArr[0], quotient, m);
+            if (v % m < 0 ) {
+    			v = v + m;
+    		} 
+            //Update the table
+            uArr[1] = uArr[0];
+            uArr[0] = u;
+            vArr[1] = vArr[0];
+            vArr[0] = v;
+            rArr[1] = rArr[0];
+            rArr[0] = remainder;    
+		}
+		
+		//Return inverse from the table
+		return uArr[0];
+	}
 	
 	/**
-	 * Convert a long to 2 chars
-	 * @author Walsh
+	 * Raise the base to the exponent and take the mod of it
+	 * @author Mantas Pileckis
+	 * @param base Base
+	 * @param exponent The exponent that is used to raise the base 
+	 * @param modulus The modulus of the baseToExponent
+	 * @return The base raised to exponent and modded
+	 */
+	public static long modPower(long base, long exponent, long modulus){
+		int limit = 0;
+        while (Math.pow(2, limit) <= exponent){
+            limit++;
+        }
+        limit--;
+        long[] simplifiedExponenet = simplifiedExponenet(base, limit, modulus);  
+        long result = 1;
+        long currentPower = exponent;
+        long iValue = (long)Math.pow(2, limit);    
+        for (int i = limit; i >= 0; i--){
+            if (currentPower >= iValue){
+                currentPower -= iValue;       
+                result = overflow(result, simplifiedExponenet[i], modulus);
+            }
+            iValue /= 2;
+        }
+        return result;
+	}
+	
+	/**
+	 * Function to create an array of Exponents for faster modPower calculation
+	 * @param base Base
+	 * @param max The limit to which we are calculating the exponent powers
+	 * @param modulus The modulus we are using
+	 * @return The array of values associated with the bases and exponents.
+	 */
+	private static long[] simplifiedExponenet(long base, int max, long modulus)
+	{
+		long[] returnList = new long[max + 1];
+		long currentValue = base;
+		returnList[0] = base;
+		for(int i = 1; i <= max; i ++){
+			currentValue = overflow(currentValue, currentValue, modulus); 
+			returnList[i] = currentValue;
+		}
+		return returnList;
+	}
+	
+	/**
+	 * Method to take care of mdMultiplication and overflow
+	 * @author Mantas Pileckis
+	 * @param arrVariable first number
+	 * @param arrVariable2 second number
+	 * @param modulus The modulus that we are working with
+	 * @return The result % modulus
+	 */
+	public static long overflow(long arrVariable, long rrrVariable2, long modulus)
+	{
+		long newValue = 0;
+		while(rrrVariable2 > 0){
+			// If rrrVariable2 is odd, add a to return
+			if (rrrVariable2 % 2 == 1) {
+				newValue = (newValue + arrVariable) % modulus;
+			}
+			arrVariable = (arrVariable * 2) % modulus;			
+			rrrVariable2 /= 2;
+		}
+		return newValue;
+	}
+	
+
+	/**
+	 * Method that generates a random prime number within the limits of min and max
+	 * @param minValue the min limit
+	 * @param maxValue the max limit
+	 * @return a random prime between the min and max limit
+	 * @author Kieran Walsh
+	 */
+	public static long randPrime(long minValue, long maxValue, Random rand)
+	{
+		long randRelPrime = 0;
+		do {
+			randRelPrime = (long) (minValue + (rand.nextDouble()*(maxValue-minValue)));
+		}
+		while(!isPrime(randRelPrime)); 
+		return randRelPrime;
+	}
+
+	/**
+	 * Method that generates a random long relatively prime to num
+	 * @param num value which we are checking
+	 * @return Random value which is relatively prime and less than num
+	 * @author Kieran Walsh
+	 */
+	public static long relPrime(long num, Random rand)
+	{
+		long randRelPrime = 0;
+		do {
+			randRelPrime = (long) (rand.nextDouble()*num);
+		}
+		while(!isRelativelyPrime(num, randRelPrime));
+		return randRelPrime;
+	}
+
+	/**
+	 * Method that figures out  whether a given long is prime or not
+	 * @author Kieran Walsh
+	 * @param a long value
+	 * @return whether or not a long is prime
+	 */
+	private static boolean isPrime(long num)
+	{
+		boolean prime = true;
+		double sqrt = Math.sqrt(num);
+		for(int i = 2; prime && i <= sqrt; i++) {
+			if(num%i == 0) {
+				prime = false;
+			}
+		}
+		return prime;
+	}
+
+	/**
+	 * Determine whether or not two longs are relative prime.
+	 * This means their gcd is 1.
+	 * This method uses the Euclidean Algorithm to determine the gcd.
+	 * 
+	 * @param  long x
+	 * @param  long n
+	 * @return whether or not the two longs are relatively prime
+	 * @author Kieran Walsh
+	 */
+	private static boolean isRelativelyPrime(long x, long n)
+	{
+		long a = x, b = n, r = 2; //r initially set to 2 so it can enter the loop
+		if(x < n) //n is larger; swap the values to perform gcd
+		{ 
+			a = n;
+			b = x;
+		}
+		
+		while(r != 0) //the reaminder still is not equal to zero
+		{ 
+			r = a%b; 	//calculate mod
+			a = b; 		//b becomes the new a value
+			b = r; 		//r becomes the new b value
+		}
+		return (a == 1) ? true : false; //true if gcd is 1, or false if it is not
+	}
+
+	/**
+	 * Use standard out to display the data as a sequence of numbers
+	 * 
+	 * @param long[] data
+	 * @author Kieran Walsh
+	 */
+	public static void show(long[] data)
+	{
+		int size = data.length;
+		String allData = "";
+		for(int i = 0; i < size; i++) 
+		{
+			allData += data[i] + ", ";
+		}
+		
+		System.out.println(allData.substring(0, allData.length()-2));
+	}	
+
+	/**
+	 * Convert a long to n chars, where n 
+	 * is the block size of the message.
+	 * 
 	 * @param long x
-	 * @return String of 2 chars
+	 * @return String chars
+	 * @author Kieran Walsh
 	 */
-	public static String longTo2Chars(long x)
+	public static String longToChars(long x) 
 	{
-		String result = Long.toString(x).substring(0,2);
-		return result;
-	}
-	
-	
-	/**
-	 * Find a random prime number within range n to m.
-	 * 
-	 * @param int m, n (bounds) java.util.Random rand (Random number generator)
-	 * @return long num a random prime number
-	 * @author Walsh
-	 */
-	public static long	randPrime(int m, int n, java.util.Random rand) 
-	{
-		rand = new Random();
-		int num = rand.nextInt(n - m) + m;
-
-		while(!isPrime(num))
+		String padding = Long.toBinaryString(x);
+		//Take care of the padding
+		while(padding.length()%8 != 0) 
 		{
-			num = rand.nextInt(n - m) + m;
+			padding = '0' + padding;
 		}
-		return num;
-	}
-	
-	/**
-	 * Used in randPrime to check if a number is prime.
-	 * @param int number
-	 * @return boolean
-	 * @author Walsh
-	 */
-	private static boolean isPrime(int number) {
-		for (int i = 2; i < number; i++) {
-			if (number % i == 0) {
-				return false;
+		
+		String bits = padding;
+		int numChars = bits.length()/8; 
+		String chars = "";
+		for(int i = 0; i < numChars; i++) 
+		{
+			int currByte = 0;
+			for(int j = 0; j < 8; j++) 
+			{
+				currByte +=  (1 << (j))*Integer.parseInt(bits.substring((i*8) + 8-(j+1),(i*8) + 8-j));
 			}
+			chars += Character.toString((char) currByte); 
 		}
-		return true;
+		return chars;
 	}
+
 	
 	/**
-	 * Find relatively prime number to n.
+	 * Converts a specified number of numeric chars, n, to a long
 	 * 
-	 * @param n
-	 * @param rand
-	 * @return long m
-	 * @author Walsh
+	 * @param 	String msg
+	 * @param 	int p
+	 * @param 	int n
+	 * @return 	long converted
+	 * @author Kieran Walsh
 	 */
-	public static long	relPrime(long n, java.util.Random rand) 
+	public static long toLong(String msg, int p, int n) 
 	{
-		long m = rand.nextInt((int) (n-1));
-		while(BigInteger.valueOf(n).gcd(BigInteger.valueOf(m)).intValue() != 1)
+		String bits = "";
+		for(int i = 0; i < n; i++) 
 		{
-			m = rand.nextInt((int) n-1);
+			String padding = Integer.toBinaryString(msg.charAt(p+i));
+			//Take care of the padding
+			while(padding.length()%8 != 0) 
+			{
+				padding = '0' + padding;
+			}
+			bits += padding;
+			
 		}
-		return m;
-	}
-	
-	/**
-	 * Display an array of longs on stdout
-	 * @param cipher
-	 * @author Walsh
-	 */
-	public static void	show(long[] cipher) 
-	{
-		System.out.println(Arrays.toString(cipher));
-	}
-	
-	/**
-	 * Convert two numeric chars to a long
-	 * @param msg
-	 * @param p
-	 * @return long
-	 * @author Walsh
-	 */
-	public static long	toLong(java.lang.String msg, int p) 
-	{
-		String temp = msg.substring(p,p+1);
-		return Long.parseLong(temp);
+		
+		long converted = 0;
+		int size = bits.length();
+		for(int i = 0; i < size; i++) 
+		{
+			converted += (1l << (i))*Long.parseLong(bits.substring(size-i-1, size-i));
+		}	
+		return converted;
 	}
 
 
