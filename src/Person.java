@@ -1,81 +1,90 @@
 /**
- * 
- * @author Kieran Walsh, Martin Price, Mantas Pileckis
- *
+ * Person Class
+ * Crypto Project 3
+ * @author martinprice
+ * @author Mantas P
+ * @author Kieren Walsh
  */
+
 import java.util.Random;
-public class Person 
+public class Person
 {
-	/** Instance Variables */
-	private long privKey;	//Decrypt with
+	/**
+	 * Instance variables
+	 */
+	//encrypting
+	private long pubKey;
+	private long privKey;
 	private long mod;
-	private long p;
-	private long q;
 	
+	//block sizes and mods
+	private final int block = 7; 
+	private long max =  (long)Math.sqrt(Long.MAX_VALUE / 2);
+	private long min = (long)(Math.sqrt(max));
+	
+
 	/**
 	 * Constructor
-	 * @param e exponent
-	 * @param m modulus
-	 * @param b base
 	 */
 	public Person()
 	{
-		long p = RSA.randPrime((int)(Math.sqrt(Math.sqrt(Long.MAX_VALUE))), (int)Math.sqrt(Long.MAX_VALUE), new Random());
-		long q = RSA.randPrime((int)(Math.sqrt(Math.sqrt(Long.MAX_VALUE))), (int)Math.sqrt(Long.MAX_VALUE), new Random());
-		mod = p * q;
-		privKey = RSA.inverse(getPublicKey(), ((p-1)*(q-1)));
-	}
-	
+        long p = RSA.randPrime(min, max, new Random());
+        long q = RSA.randPrime(min, max, new Random());
+	    mod = p * q; 
+	    pubKey = RSA.relPrime((p - 1) * (q - 1), new Random());
+	    privKey = RSA.inverse(pubKey, (p-1) * (q-1));
+    }
+
 	/**
-	 * Decrypts the cipher message
-	 * 
-	 * @param cipher : long array representing the cipher message
-	 * @return : decrypted cipher
-	 * @author martinprice
+	 * Encrypted a message into cipher text
+	 * @param msg plain text message to encrypt
+	 * @param p person to encrpyt to
+	 * @return encrypted message in form of long[]
 	 */
-	public String decrypt(long[] cipher) 
+	public long[] encryptTo(String msg, Person p)
 	{
-		String s = "";
-		for(long l : cipher)
-		{
-			long x = RSA.modPower(l, privKey, mod);
-			s += RSA.longTo2Chars(x);
-		}
-		return s;
-	}
-	
-	/**
-	 * Encrypts the message
-	 * @param msg message to encrypt
-	 * @param p recipient of encrypted message
-	 * @return encrypted message
-	 * @author martinprice
-	 */
-	public  long[]	encryptTo(String msg, Person p) 
-	{
-		long[] encrypted = new long[msg.length()];
-		long key = p.getPublicKey();
-		for(int i = 0; i < msg.length(); i++)
-		{
-			int asc = (int)msg.charAt(i);
-			encrypted[i] = RSA.modPower(asc, key, p.getM());
+		long theirKey = p.getE();     
+		long theirMod = p.getM();
+		int blocks = (msg.length() / block) + 1; 
+		long[] encrypted = new long[blocks];		
+		            
+		//Pad With Spaces for the last block
+        while (msg.length() % block > 0)
+            msg += " ";
+        
+        int index = 0;
+        for(int i = 0; i < msg.length(); i+= block)
+        {
+            if(i + block > msg.length())
+            	encrypted[index++] =  RSA.modPower(RSA.toLong(msg, i, block), theirKey, theirMod);
+            else
+            	encrypted[index++] =  RSA.modPower(RSA.toLong(msg, i, block), theirKey, theirMod);
 		}
 		return encrypted;
 	}
 	
 	/**
-	 * 
-	 * @return public modulus
-	 * @author martinprice
+	 * Decrypts the incoming message and returns the plain text
+	 * @param message cipher message
+	 * @return msg string plain text message
+	 */
+	public String decrypt(long[] message)
+	{
+		String msg = "";
+		for(int i = 0; i < message.length; i++)
+			msg += RSA.longToChars(RSA.modPower(message[i], privKey, mod));
+		return msg;
+	}
+
+	/**
+	 * @return publicKey
+	 */
+	public long getE()
+	{ return pubKey; }
+
+	/**
+	 * @return publicModulus
 	 */
 	public long getM()
 	{ return mod; }
-	
-	/**
-	 * Calculates the person public key
-	 * @return the persons public key
-	 * @author martinprice
-	 */
-	public long getPublicKey()
-	{ return RSA.relPrime(((p-1) * (q-1)), new Random()); }
 }
